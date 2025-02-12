@@ -21,59 +21,61 @@ app.get("/", (req, res) => {
     res.send("API funcionando 🚀");
 });
 
-// Leer todos los usuarios
-app.get("/users", async (req, res) => {
+// Leer todos los libros
+app.get("/books", async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM users");
+        const result = await pool.query("SELECT * FROM books");
         res.json(result.rows);
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error al obtener los usuarios");
+        res.status(500).send("Error al obtener los libros");
     }
 });
 
-// Crear un usuario
-app.post("/users", async (req, res) => {
-    const { name } = req.body;
+// Crear un libro
+app.post("/books", async (req, res) => {
+    const { title, author } = req.body;
     try {
-        const result = await pool.query("INSERT INTO users (name) VALUES ($1) RETURNING *", [name]);
+        const result = await pool.query("INSERT INTO books (title, author) VALUES ($1, $2) RETURNING *", [title, author]);
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error al crear el usuario");
+        res.status(500).send("Error al crear el libro");
     }
 });
 
-// Actualizar un usuario
-app.put("/users/:id", async (req, res) => {
+// Actualizar un libro
+app.put("/books/:id", async (req, res) => {
     const { id } = req.params;
-    const { name } = req.body;
+    const { title, author } = req.body;
     try {
-        const result = await pool.query("UPDATE users SET name = $1 WHERE id = $2 RETURNING *", [name, id]);
+        const result = await pool.query("UPDATE books SET title = $1, author = $2 WHERE id = $3 RETURNING *", [title, author, id]);
         if (result.rows.length === 0) {
-            return res.status(404).send("Usuario no encontrado");
+            return res.status(404).send("Libro no encontrado");
         }
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error al actualizar el usuario");
+        res.status(500).send("Error al actualizar el libro");
     }
 });
 
-// Eliminar un usuario
-app.delete("/users/:id", async (req, res) => {
+// Eliminar un libro
+app.delete("/books/:id", async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await pool.query("DELETE FROM users WHERE id = $1 RETURNING *", [id]);
+        const result = await pool.query("DELETE FROM books WHERE id = $1 RETURNING *", [id]);
         if (result.rows.length === 0) {
-            return res.status(404).send("Usuario no encontrado");
+            return res.status(404).send("Libro no encontrado");
         }
         res.status(204).send();
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error al eliminar el usuario");
+        res.status(500).send("Error al eliminar el libro");
     }
 });
 
 // Iniciar el servidor
 app.listen(3000, () => console.log("Backend corriendo en el puerto 3000"));
+
+// Para ejecutar este servidor, necesitas tener una base de datos PostgreSQL corriendo en el puerto 5432. Puedes usar Docker para levantar una base de datos PostgreSQL con el siguiente comando:

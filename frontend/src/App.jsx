@@ -1,104 +1,120 @@
 import { useState, useEffect } from "react";
 
 function App() {
-    const [users, setUsers] = useState([]);
-    const [newUser, setNewUser] = useState("");
-    const [editingUser, setEditingUser] = useState(null);
-    const [editedName, setEditedName] = useState("");
+    const [books, setBooks] = useState([]);
+    const [newBookTitle, setNewBookTitle] = useState("");
+    const [newBookAuthor, setNewBookAuthor] = useState("");
+    const [editingBook, setEditingBook] = useState(null);
+    const [editedTitle, setEditedTitle] = useState("");
+    const [editedAuthor, setEditedAuthor] = useState("");
 
-    // Obtener usuarios del backend
+    // Obtener libros del backend
     useEffect(() => {
-        fetch("http://localhost:3000/users")
+        fetch("http://localhost:3000/books")
             .then((res) => res.json())
-            .then((data) => setUsers(data));
-    }, [users]);
+            .then((data) => setBooks(data));
+    }, [books]);
 
-    // Crear un nuevo usuario
-    const createUser = () => {
-        fetch("http://localhost:3000/users", {
+    // Crear un nuevo libro
+    const createBook = () => {
+        fetch("http://localhost:3000/books", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ name: newUser }),
+            body: JSON.stringify({ title: newBookTitle, author: newBookAuthor }),
         })
             .then((res) => res.json())
             .then((data) => {
-                setUsers([...users, data]);
-                setNewUser("");
+                setBooks([...books, data]);
+                setNewBookTitle("");
+                setNewBookAuthor("");
             });
     };
 
-    // Eliminar un usuario
-    const deleteUser = (id) => {
-        fetch(`http://localhost:3000/users/${id}`, {
+    // Eliminar un libro
+    const deleteBook = (id) => {
+        fetch(`http://localhost:3000/books/${id}`, {
             method: "DELETE",
         }).then(() => {
-            setUsers(users.filter((user) => user.id !== id));
+            setBooks(books.filter((book) => book.id !== id));
         });
     };
 
-    // Iniciar edición de un usuario
-    const startEditing = (user) => {
-        setEditingUser(user);
-        setEditedName(user.name);
+    // Iniciar edición de un libro
+    const startEditing = (book) => {
+        setEditingBook(book);
+        setEditedTitle(book.title);
+        setEditedAuthor(book.author);
     };
 
-    // Actualizar un usuario
-    const updateUser = () => {
-        fetch(`http://localhost:3000/users/${editingUser.id}`, {
+    // Actualizar un libro
+    const updateBook = () => {
+        fetch(`http://localhost:3000/books/${editingBook.id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ name: editedName }),
+            body: JSON.stringify({ title: editedTitle, author: editedAuthor }),
         })
             .then((res) => res.json())
             .then((data) => {
-                setUsers(
-                    users.map((user) =>
-                        user.id === data.id ? { ...user, name: data.name } : user
+                setBooks(
+                    books.map((book) =>
+                        book.id === data.id ? { ...book, title: data.title, author: data.author } : book
                     )
                 );
-                setEditingUser(null);
-                setEditedName("");
+                setEditingBook(null);
+                setEditedTitle("");
+                setEditedAuthor("");
             });
     };
 
     return (
         <div>
-            <h1>Usuarios</h1>
+            <h1>Libros</h1>
 
-            {/* Formulario para crear un usuario */}
+            {/* Formulario para crear un libro */}
             <div>
                 <input
                     type="text"
-                    value={newUser}
-                    onChange={(e) => setNewUser(e.target.value)}
-                    placeholder="Nombre del usuario"
+                    value={newBookTitle}
+                    onChange={(e) => setNewBookTitle(e.target.value)}
+                    placeholder="Título del libro"
                 />
-                <button onClick={createUser}>Crear</button>
+                <input
+                    type="text"
+                    value={newBookAuthor}
+                    onChange={(e) => setNewBookAuthor(e.target.value)}
+                    placeholder="Autor del libro"
+                />
+                <button onClick={createBook}>Crear</button>
             </div>
 
-            {/* Listar usuarios */}
+            {/* Listar libros */}
             <ul>
-                {users.map((user) => (
-                    <li key={user.id}>
-                        {editingUser && editingUser.id === user.id ? (
+                {books.map((book) => (
+                    <li key={book.id}>
+                        {editingBook && editingBook.id === book.id ? (
                             <div>
                                 <input
                                     type="text"
-                                    value={editedName}
-                                    onChange={(e) => setEditedName(e.target.value)}
+                                    value={editedTitle}
+                                    onChange={(e) => setEditedTitle(e.target.value)}
                                 />
-                                <button onClick={updateUser}>Actualizar</button>
-                                <button onClick={() => setEditingUser(null)}>Cancelar</button>
+                                <input
+                                    type="text"
+                                    value={editedAuthor}
+                                    onChange={(e) => setEditedAuthor(e.target.value)}
+                                />
+                                <button onClick={updateBook}>Actualizar</button>
+                                <button onClick={() => setEditingBook(null)}>Cancelar</button>
                             </div>
                         ) : (
                             <div>
-                                {user.name}
-                                <button onClick={() => startEditing(user)}>Editar</button>
-                                <button onClick={() => deleteUser(user.id)}>Eliminar</button>
+                                {book.title} - {book.author}
+                                <button onClick={() => startEditing(book)}>Editar</button>
+                                <button onClick={() => deleteBook(book.id)}>Eliminar</button>
                             </div>
                         )}
                     </li>
