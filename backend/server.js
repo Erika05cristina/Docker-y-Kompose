@@ -10,11 +10,31 @@ app.use(cors());
 // Conexión a la base de datos PostgreSQL
 const pool = new Pool({
     user: "postgres",
-    host: "db",
-    database: "mydb",
+    host: "db",  // Nombre del servicio del DB en Kubernetes
+    database: "books",
     password: "password",
     port: 5432,
 });
+
+// Función para crear la tabla 'books' si no existe
+const createTable = async () => {
+    const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS books (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            author VARCHAR(255) NOT NULL
+        );
+    `;
+    try {
+        await pool.query(createTableQuery);
+        console.log("Tabla 'books' asegurada.");
+    } catch (err) {
+        console.error("Error al crear la tabla:", err);
+    }
+};
+
+// Llamar a la función para crear la tabla al iniciar el backend
+createTable();
 
 // Ruta de inicio
 app.get("/", (req, res) => {
@@ -77,5 +97,3 @@ app.delete("/books/:id", async (req, res) => {
 
 // Iniciar el servidor
 app.listen(3000, () => console.log("Backend corriendo en el puerto 3000"));
-
-// Para ejecutar este servidor, necesitas tener una base de datos PostgreSQL corriendo en el puerto 5432. Puedes usar Docker para levantar una base de datos PostgreSQL con el siguiente comando:
